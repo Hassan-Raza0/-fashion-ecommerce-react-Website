@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { HiOutlineArrowRight } from "react-icons/hi";
-import { products, categories, testimonials } from "../data/products";
+import { products, categories, testimonials, brands, blogPosts, lookbookItems } from "../data/products";
 import ProductCard from "../components/ProductCard";
+import { useRecentlyViewed } from "../context/RecentlyViewedContext";
 
 const featuredProducts = products.filter((p) => p.badge === "Best Seller" || p.rating >= 4.7);
 const newArrivals = products.filter((p) => p.badge === "New");
@@ -17,6 +18,16 @@ const categoryImages: Record<string, string> = {
 };
 
 export default function Home() {
+  const { items: recentlyViewed } = useRecentlyViewed();
+  const recommendedProducts = recentlyViewed.length > 0
+    ? products
+        .filter((product) =>
+          recentlyViewed.some((recent) => recent.category === product.category && recent.id !== product.id)
+        )
+        .filter((product) => !recentlyViewed.some((recent) => recent.id === product.id))
+        .slice(0, 4)
+    : featuredProducts.slice(0, 4);
+
   return (
     <div>
       {/* Hero Section */}
@@ -115,6 +126,76 @@ export default function Home() {
           </Link>
         </div>
       </section>
+
+      {/* Recently Viewed */}
+      {recentlyViewed.length > 0 && (
+        <section className="py-20 bg-white dark:bg-neutral-950">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-end justify-between mb-10">
+              <div>
+                <p className="text-sm font-medium tracking-[0.15em] uppercase text-neutral-500 dark:text-neutral-400 mb-2">
+                  Your Activity
+                </p>
+                <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white">
+                  Recently Viewed
+                </h2>
+              </div>
+              <Link
+                to="/shop"
+                className="hidden sm:flex items-center gap-2 text-sm font-medium text-neutral-900 dark:text-white hover:gap-3 transition-all"
+              >
+                View All <HiOutlineArrowRight size={16} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {recentlyViewed.slice(0, 4).map((product, i) => (
+                <ProductCard key={product.id} product={product} index={i} />
+              ))}
+            </div>
+            <Link
+              to="/shop"
+              className="sm:hidden mt-8 w-full py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white text-sm font-medium rounded-full flex items-center justify-center gap-2"
+            >
+              View All <HiOutlineArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* Recommended For You */}
+      {recommendedProducts.length > 0 && (
+        <section className="py-20 bg-neutral-50 dark:bg-neutral-950">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-end justify-between mb-10">
+              <div>
+                <p className="text-sm font-medium tracking-[0.15em] uppercase text-neutral-500 dark:text-neutral-400 mb-2">
+                  Personalized Picks
+                </p>
+                <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white">
+                  Recommended For You
+                </h2>
+              </div>
+              <Link
+                to="/shop"
+                className="hidden sm:flex items-center gap-2 text-sm font-medium text-neutral-900 dark:text-white hover:gap-3 transition-all"
+              >
+                Discover More <HiOutlineArrowRight size={16} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+              {recommendedProducts.map((product, i) => (
+                <ProductCard key={product.id} product={product} index={i} />
+              ))}
+            </div>
+            <Link
+              to="/shop"
+              className="sm:hidden mt-8 w-full py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white text-sm font-medium rounded-full flex items-center justify-center gap-2"
+            >
+              Discover More <HiOutlineArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Categories */}
       <section className="py-20 bg-neutral-50 dark:bg-neutral-900/50">
@@ -248,8 +329,241 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Brands Showcase */}
+      <section className="py-20 bg-white dark:bg-neutral-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <p className="text-sm font-medium tracking-[0.15em] uppercase text-neutral-500 dark:text-neutral-400 mb-2">
+              Premium Labels
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white">
+              Featured Brands
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {brands.slice(0, 5).map((brand, i) => (
+              <motion.div
+                key={brand.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="group"
+              >
+                <Link
+                  to={`/brands`}
+                  className="block p-6 bg-neutral-50 dark:bg-neutral-800 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors duration-300 text-center"
+                >
+                  <img
+                    src={brand.logo}
+                    alt={brand.name}
+                    className="w-16 h-16 mx-auto mb-4 rounded-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <h3 className="font-semibold text-neutral-900 dark:text-white mb-1">
+                    {brand.name}
+                  </h3>
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                    {brand.origin}
+                  </p>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link
+              to="/brands"
+              className="inline-flex items-center gap-2 px-6 py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+            >
+              View All Brands <HiOutlineArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Lookbook Section */}
+      <section className="py-20 bg-neutral-50 dark:bg-neutral-900/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <p className="text-sm font-medium tracking-[0.15em] uppercase text-neutral-500 dark:text-neutral-400 mb-2">
+              Style Inspiration
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white">
+              Lookbook
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {lookbookItems.map((lookbook, i) => (
+              <motion.div
+                key={lookbook.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="group relative overflow-hidden rounded-2xl"
+              >
+                <img
+                  src={lookbook.image}
+                  alt={lookbook.title}
+                  className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h3 className="text-white font-semibold text-xl mb-2">
+                    {lookbook.title}
+                  </h3>
+                  <p className="text-white/80 text-sm mb-4">
+                    {lookbook.description}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white/70 text-xs uppercase tracking-wide">
+                      {lookbook.season} • {lookbook.style}
+                    </span>
+                    <Link
+                      to={`/shop?season=${lookbook.season.toLowerCase()}`}
+                      className="text-white hover:text-white/80 transition-colors flex items-center gap-1 text-sm"
+                    >
+                      Shop Look <HiOutlineArrowRight size={14} />
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Blog Preview */}
+      <section className="py-20 bg-white dark:bg-neutral-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <p className="text-sm font-medium tracking-[0.15em] uppercase text-neutral-500 dark:text-neutral-400 mb-2">
+                Latest Insights
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white">
+                From Our Blog
+              </h2>
+            </div>
+            <Link
+              to="/blog"
+              className="hidden sm:flex items-center gap-2 text-sm font-medium text-neutral-900 dark:text-white hover:gap-3 transition-all"
+            >
+              View All <HiOutlineArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {blogPosts.slice(0, 3).map((post, i) => (
+              <motion.article
+                key={post.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="group bg-neutral-50 dark:bg-neutral-800 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
+              >
+                <div className="aspect-video relative overflow-hidden">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-white/90 dark:bg-neutral-800/90 text-neutral-900 dark:text-white px-2 py-1 rounded text-xs font-medium">
+                      {post.category}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2 line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-neutral-600 dark:text-neutral-400 text-sm mb-4 line-clamp-2">
+                    {post.excerpt}
+                  </p>
+                  <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+                    <span>{post.author}</span>
+                    <span>{post.readTime} min read</span>
+                  </div>
+                </div>
+              </motion.article>
+            ))}
+          </div>
+          <Link
+            to="/blog"
+            className="sm:hidden mt-8 w-full py-3 border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white text-sm font-medium rounded-full flex items-center justify-center gap-2"
+          >
+            View All Posts <HiOutlineArrowRight size={16} />
+          </Link>
+        </div>
+      </section>
+
+      {/* Promotions Banner */}
       <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-neutral-900 to-neutral-800 p-8 text-white"
+            >
+              <div className="relative z-10">
+                <h3 className="text-2xl font-bold mb-2">Free Shipping</h3>
+                <p className="text-neutral-300 mb-4">On orders over $200</p>
+                <Link
+                  to="/shop"
+                  className="inline-flex items-center gap-2 text-sm font-medium hover:gap-3 transition-all"
+                >
+                  Shop Now <HiOutlineArrowRight size={16} />
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 p-8 text-white"
+            >
+              <div className="relative z-10">
+                <h3 className="text-2xl font-bold mb-2">New Arrivals</h3>
+                <p className="text-white/90 mb-4">Fresh styles weekly</p>
+                <Link
+                  to="/new-arrivals"
+                  className="inline-flex items-center gap-2 text-sm font-medium hover:gap-3 transition-all"
+                >
+                  Discover <HiOutlineArrowRight size={16} />
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-neutral-800 to-neutral-700 p-8 text-white"
+            >
+              <div className="relative z-10">
+                <h3 className="text-2xl font-bold mb-2">VIP Access</h3>
+                <p className="text-neutral-300 mb-4">Exclusive previews</p>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-2 text-sm font-medium hover:gap-3 transition-all"
+                >
+                  Join Now <HiOutlineArrowRight size={16} />
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 bg-neutral-50 dark:bg-neutral-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <p className="text-sm font-medium tracking-[0.15em] uppercase text-neutral-500 dark:text-neutral-400 mb-2">
@@ -267,7 +581,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.15 }}
-                className="p-8 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800"
+                className="p-8 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700"
               >
                 <div className="flex items-center gap-4 mb-6">
                   <img
@@ -278,11 +592,21 @@ export default function Home() {
                   />
                   <div>
                     <h4 className="font-semibold text-neutral-900 dark:text-white">{testimonial.name}</h4>
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400">{testimonial.role}</p>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400">{testimonial.location}</p>
                   </div>
                 </div>
+                <div className="flex items-center mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <span
+                      key={i}
+                      className={`text-sm ${i < testimonial.rating ? 'text-amber-400' : 'text-neutral-300'}`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
                 <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">
-                  &ldquo;{testimonial.text}&rdquo;
+                  &ldquo;{testimonial.comment}&rdquo;
                 </p>
               </motion.div>
             ))}

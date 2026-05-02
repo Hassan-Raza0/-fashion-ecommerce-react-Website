@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { HiOutlineSearch, HiOutlineShoppingBag, HiOutlineHeart, HiOutlineMenu, HiOutlineX, HiOutlineMoon, HiOutlineSun, HiOutlineUser, HiOutlineCog, HiOutlineLogout } from "react-icons/hi";
+import { HiOutlineSearch, HiOutlineShoppingBag, HiOutlineHeart, HiOutlineMenu, HiOutlineX, HiOutlineMoon, HiOutlineSun, HiOutlineUser, HiOutlineCog, HiOutlineLogout, HiOutlineChevronDown } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -11,8 +11,18 @@ import { useToast } from "../context/ToastContext";
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
+  { to: "/brands", label: "Brands" },
+  { to: "/blog", label: "Blog" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
+];
+
+const collectionLinks = [
+  { to: "/new-arrivals", label: "New Arrivals" },
+  { to: "/luxury-collection", label: "Luxury" },
+  { to: "/streetwear", label: "Streetwear" },
+  { to: "/summer-collection", label: "Summer" },
+  { to: "/winter-collection", label: "Winter" },
 ];
 
 export default function Header() {
@@ -58,6 +68,7 @@ export default function Header() {
   }, []);
 
   const showSolidBg = !isHome || scrolled;
+  const collectionsActive = collectionLinks.some((link) => location.pathname === link.to);
 
   const handleSignOut = () => {
     signOut();
@@ -77,18 +88,18 @@ export default function Header() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            <Link to="/" className="flex items-center gap-2">
+            <Link to="/" className="flex shrink-0 items-center gap-2">
               <span className={`text-2xl lg:text-3xl font-bold tracking-tight transition-colors ${showSolidBg ? "text-neutral-900 dark:text-white" : "text-white"}`}>
                 Trendify
               </span>
             </Link>
 
-            <nav className="hidden lg:flex items-center gap-8">
+            <nav className="hidden xl:flex flex-1 items-center justify-center gap-1 px-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`text-sm font-medium tracking-wide uppercase transition-colors ${
+                  className={`whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium tracking-wide uppercase transition-colors ${
                     location.pathname === link.to
                       ? showSolidBg ? "text-neutral-900 dark:text-white" : "text-white"
                       : showSolidBg ? "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white" : "text-white/70 hover:text-white"
@@ -97,9 +108,38 @@ export default function Header() {
                   {link.label}
                 </Link>
               ))}
+
+              <div className="group relative">
+                <button
+                  type="button"
+                  className={`flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium tracking-wide uppercase transition-colors ${
+                    collectionsActive
+                      ? showSolidBg ? "text-neutral-900 dark:text-white" : "text-white"
+                      : showSolidBg ? "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  Collections
+                  <HiOutlineChevronDown size={14} className="transition-transform group-hover:rotate-180" />
+                </button>
+                <div className="invisible absolute left-1/2 top-full z-50 mt-3 w-56 -translate-x-1/2 rounded-2xl border border-neutral-100 bg-white p-2 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100 dark:border-neutral-800 dark:bg-neutral-900">
+                  {collectionLinks.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className={`block rounded-xl px-4 py-2.5 text-sm transition-colors ${
+                        location.pathname === link.to
+                          ? "bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-white"
+                          : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </nav>
 
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               <button
                 onClick={toggleDarkMode}
                 className={`p-2 rounded-full transition-colors ${showSolidBg ? "hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300" : "hover:bg-white/10 text-white/80"}`}
@@ -208,7 +248,7 @@ export default function Header() {
 
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className={`lg:hidden p-2 rounded-full transition-colors ${showSolidBg ? "hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300" : "hover:bg-white/10 text-white/80"}`}
+                className={`xl:hidden p-2 rounded-full transition-colors ${showSolidBg ? "hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300" : "hover:bg-white/10 text-white/80"}`}
                 aria-label="Menu"
               >
                 {mobileOpen ? <HiOutlineX size={22} /> : <HiOutlineMenu size={22} />}
@@ -252,7 +292,7 @@ export default function Header() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+              className="fixed inset-0 bg-black/40 z-40 xl:hidden"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
@@ -260,7 +300,7 @@ export default function Header() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "tween", duration: 0.3 }}
-              className="fixed top-0 right-0 bottom-0 w-72 bg-white dark:bg-neutral-900 z-50 lg:hidden shadow-2xl"
+              className="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] overflow-y-auto bg-white dark:bg-neutral-900 z-50 xl:hidden shadow-2xl"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-8">
@@ -297,6 +337,25 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
+
+                  <div className="mt-4 border-t border-neutral-100 pt-4 dark:border-neutral-800">
+                    <p className="px-3 pb-2 text-xs font-semibold uppercase tracking-[0.15em] text-neutral-400">
+                      Collections
+                    </p>
+                    {collectionLinks.map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        className={`block text-base font-medium py-2.5 px-3 rounded-xl ${
+                          location.pathname === link.to
+                            ? "bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                            : "text-neutral-500 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
 
                   {isAuthenticated ? (
                     <>

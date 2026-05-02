@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { HiOutlineX, HiOutlineHeart, HiHeart, HiOutlineShoppingBag, HiMinus, HiPlus } from "react-icons/hi";
 import { FaStar } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "../data/products";
 import { useCart } from "../context/CartContext";
@@ -21,16 +21,17 @@ export default function QuickPreview({ product, onClose }: QuickPreviewProps) {
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
 
+  useEffect(() => {
+    if (product) {
+      setSelectedSize(product.sizes[0] || "");
+      setSelectedColor(product.colors[0] || "");
+      setQuantity(1);
+    }
+  }, [product]);
+
   if (!product) return null;
 
   const wishlisted = isInWishlist(product.id);
-
-  // Initialize defaults when product changes
-  if (selectedSize !== product.sizes[0] && product.sizes[0]) {
-    setSelectedSize(product.sizes[0]);
-    setSelectedColor(product.colors[0]);
-    setQuantity(1);
-  }
 
   const handleAddToCart = () => {
     addToCart(product, selectedSize, selectedColor, quantity);

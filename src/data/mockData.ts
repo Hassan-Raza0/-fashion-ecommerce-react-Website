@@ -284,6 +284,9 @@ export function initializeMockData() {
   if (!localStorage.getItem("trendify_coupons")) {
     localStorage.setItem("trendify_coupons", JSON.stringify(SEED_COUPONS));
   }
+  if (!localStorage.getItem("trendify_password_resets")) {
+    localStorage.setItem("trendify_password_resets", JSON.stringify([]));
+  }
 }
 
 // ─── User CRUD ───
@@ -432,4 +435,58 @@ export function getActivity(userId: string): MockActivity[] {
 export function getCoupons(userId: string): MockCoupon[] {
   const all = JSON.parse(localStorage.getItem("trendify_coupons") || "{}");
   return all[userId] || [];
+}
+
+// ─── Password Reset ───
+
+export interface PasswordResetToken {
+  email: string;
+  token: string;
+  expires: number; // timestamp
+}
+
+export function initiatePasswordReset(email: string): string | null {
+  const user = findUserByEmail(email);
+  if (!user) return null;
+
+  const token: PasswordResetToken = {
+    email: email.toLowerCase(),
+    token: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+    expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+  };
+
+  const resets = JSON.parse(localStorage.getItem("trendify_password_resets") || "[]");
+  // Remove any existing resets for this email
+  const filtered = resets.filter((r: PasswordResetToken) => r.email !== email.toLowerCase());
+  filtered.push(token);
+  localStorage.setItem("trendify_password_resets", JSON.stringify(filtered));
+
+  return token.token;
+}
+
+export function verifyResetToken(token: string): string | null {
+  const resets: PasswordResetToken[] = JSON.parse(localStorage.getItem("trendify_password_resets") || "[]");
+  const reset = resets.find(r => r.token === token && r.expires > Date.now());
+  if (!reset) return null;
+
+  return reset.email;
+}
+
+export function resetPassword(token: string, newPassword: string): boolean {
+  const email = verifyResetToken(token);
+  if (!email) return false;
+
+  const users = getUsers();
+  const userIndex = users.findIndex(u => u.email.toLowerCase() === email);
+  if (userIndex === -1) return false;
+
+  users[userIndex].password = newPassword;
+  localStorage.setItem("trendify_users", JSON.stringify(users));
+
+  // Clean up the used token
+  const resets: PasswordResetToken[] = JSON.parse(localStorage.getItem("trendify_password_resets") || "[]");
+  const filtered = resets.filter((r: PasswordResetToken) => r.token !== token);
+  localStorage.setItem("trendify_password_resets", JSON.stringify(filtered));
+
+  return true;
 }
